@@ -1,7 +1,7 @@
 <template>
   <div class="calculator">
     <div class="display column-4">
-      {{ calculator.getDisplay() }}
+      {{ calculator.display }}
     </div>
     <q-btn @click="calculator.input('AC')" class="btn">AC</q-btn>
     <q-btn @click="calculator.input('+/-')" class="btn">+/-</q-btn>
@@ -45,34 +45,36 @@ export default defineComponent({
 })
 
 class Calculator {
-  private opt1: '+' | '-' | '*' | '/' | null;
-  private opt2: '+' | '-' | '*' | '/' | null = null
-  private opr1: number | null = null
-  private opr2: number | null = null
-  private opr3: number | null = null
-  private display: string | number = 0
+  private _opt1: '+' | '-' | '*' | '/' | null;
+  private _opt2: '+' | '-' | '*' | '/' | null;
+  private _opr1: number | null;
+  private _opr2: number | null;
+  private _opr3: number | null;
+  private _display: string | number;
 
   public constructor() {
-    this.opt1 = null
-    this.opt2 = null
-
-    this.opr1 = null
-    this.opr2 = null
-    this.opr3 = null
-    this.display = 0
+    this._opt1 = null
+    this._opt2 = null
+    this._opr1 = null
+    this._opr2 = null
+    this._opr3 = null
+    this._display = 0
   }
 
-  public getDisplay() {
-    return this.display
+  get display() {
+    return this._display
+  }
+
+  set display(val) {
+    this._display = val
   }
 
   public clear() {
-    this.opt1 = null
-    this.opt2 = null
-
-    this.opr1 = null
-    this.opr2 = null
-    this.opr3 = null
+    this._opt1 = null
+    this._opt2 = null
+    this._opr1 = null
+    this._opr2 = null
+    this._opr3 = null
     this.display = 0
   }
 
@@ -88,9 +90,7 @@ class Calculator {
       case '/':
         console.log('나누기', opr2)
         if (opr2 === 0) {
-
           throw new Error('0으로 못 나눔')
-
         }
         else {
           return opr1 / opr2
@@ -129,66 +129,66 @@ class Calculator {
         case '7':
         case '8':
         case '9':
-          if (this.opt2) {
-            const stringVal = String(this.opr3 || 0) + val
-            this.opr3 = Number(stringVal)
-            this.display = this.opr3
-          } else if (this.opt1) {
-            const stringVal = String(this.opr2 || 0) + val
-            this.opr2 = Number(stringVal)
-            this.display = this.opr2
+          if (this._opt2) {
+            const stringVal = String(this._opr3 || 0) + val
+            this._opr3 = Number(stringVal)
+            this.display = this._opr3
+          } else if (this._opt1) {
+            const stringVal = String(this._opr2 || 0) + val
+            this._opr2 = Number(stringVal)
+            this.display = this._opr2
           } else {
-            const stringVal = String(this.opr1 || 0) + val
-            this.opr1 = Number(stringVal)
-            this.display = this.opr1
+            const stringVal = String(this._opr1 || 0) + val
+            this._opr1 = Number(stringVal)
+            this.display = this._opr1
           }
           break
         case '+':
         case '-':
         case '*':
         case '/':
-          if (this.opr1 && this.opr2 && this.opr3 && this.opt1 && this.opt2) {
-            this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-            this.opr2 = null
-            this.opr3 = null
+          if (this._opr1 && this._opr2 && this._opr3 && this._opt1 && this._opt2) {
+            this._opr1 = this.calculate2(this._opr1, this._opr2, this._opr3, this._opt1, this._opt2)
+            this._opr2 = null
+            this._opr3 = null
 
-            this.opt1 = val
-            this.opt2 = null
+            this._opt1 = val
+            this._opt2 = null
 
-            this.display = this.opr1
-          } else if (this.opr1 && this.opr2 && this.opt1) {
+            this.display = this._opr1
+          } else if (this._opr1 && this._opr2 && this._opt1) {
             if (val === '+' || val === '-') {
-              this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-              this.opr2 = null
+              this._opr1 = this.calculate2(this._opr1, this._opr2, this._opr3, this._opt1, this._opt2)
+              this._opr2 = null
 
-              this.opt1 = val
+              this._opt1 = val
 
-              this.display = this.opr1
+              this.display = this._opr1
             }
             else if (val === '*' || val === '/') {
-              this.opt2 = val
+              this._opt2 = val
             }
 
           } else {
-            this.opt1 = val
+            this._opt1 = val
           }
           break
         case '=':
-          if (typeof this.opr1 === 'number' && typeof this.opr2 === 'number' && this.opt1) {
-            this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-            this.opr2 = null
-            this.opr3 = null
+          if (typeof this._opr1 === 'number' && typeof this._opr2 === 'number' && this._opt1) {
+            this._opr1 = this.calculate2(this._opr1, this._opr2, this._opr3, this._opt1, this._opt2)
+            this._opr2 = null
+            this._opr3 = null
 
-            this.opt1 = null
-            this.opt2 = null
+            this._opt1 = null
+            this._opt2 = null
 
-            this.display = this.opr1
+            this.display = this._opr1
           }
           break
 
       }
-      console.log(this.opr1, this.opr2, this.opr3)
-      console.log(this.opt1, this.opt2)
+      console.log(this._opr1, this._opr2, this._opr3)
+      console.log(this._opt1, this._opt2)
 
     } catch (e: any) {
       console.error(e.message)
