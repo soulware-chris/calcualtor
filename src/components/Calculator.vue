@@ -27,6 +27,7 @@
 
 <script lang="ts">
 
+import { off } from 'process';
 import {
   defineComponent,
   reactive
@@ -52,7 +53,8 @@ class Calculator {
   private _opt2: Nullable<Operator>;
   private _opr1: Nullable<string>;
   private _opr2: Nullable<string>;
-  private _opr3: Nullable<string>
+  private _opr3: Nullable<string>;
+  private _ans: Nullable<string>;
   private _display: Nullable<string | number>;
 
   public constructor() {
@@ -61,6 +63,7 @@ class Calculator {
     this._opr1 = null
     this._opr2 = null
     this._opr3 = null
+    this._ans = null
     this._display = 0
   }
 
@@ -124,6 +127,14 @@ class Calculator {
     this._opt2 = val
   }
 
+  get ans(): Nullable<string> {
+    return this._ans
+  }
+
+  set ans(val) {
+    this._ans = val
+  }
+
   public clear() {
     this._opt1 = null
     this._opt2 = null
@@ -154,21 +165,28 @@ class Calculator {
     }
   }
 
-  private calculate2(opr1: string, opr2: string, opr3: string | null, opt1: Operator, opt2: Nullable<Operator>) {
+  private calculate2() {
+    const [opt1, opt2, opr1, opr2, opr3] = [this.opt1, this.opt2, this.opr1, this.opr2, this.opr3]
     let result = null
     if (opt1 && opt2 && opr3) {
+      if (opr1 === null || opr2 === null || opr3 === null) return
       if (opt2 === '*' || opt2 === '/') {
-        const tmp = this.calculate(opr2, opr3, opt2)
-        result = this.calculate(opr1, String(tmp), opt1)
+        this.opr2 = String(this.calculate(opr2, opr3, opt2))
+        this.opr3 = null
+        result = this.calculate(opr1, this.opr2, opt1)
       } else {
-        const tmp = this.calculate(opr1, opr2, opt1)
-        result = this.calculate(String(tmp), opr3, opt2)
+        this.opr1 = String(this.calculate(opr1, opr2, opt1))
+        this.opr2 = this.opr3
+        this.opr3 = null
+        result = this.calculate(opr1, opr2, opt2)
       }
     }
     else {
+      if (opr1 === null || opr2 === null || opt1 === null) return
       result = this.calculate(opr1, opr2, opt1)
     }
-    return String(result)
+    console.log('result', result)
+    this.ans = this.display = this.opr1 = String(result)
   }
 
   public input(val: string) {
@@ -204,45 +222,30 @@ class Calculator {
         case '*':
         case '/':
           if (this.opr1 && this.opr2 && this.opr3 && this.opt1 && this.opt2) {
-            this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-            this.opr2 = null
-            this.opr3 = null
-
-            this._opt1 = val
-            this._opt2 = null
-
-            this.display = this.opr1
+            this.calculate2()
+            this.opt1 = val
+            this.opt2 = null
           } else if (this.opr1 && this.opr2 && this.opt1) {
             if (val === '+' || val === '-') {
-              this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-              this.opr2 = null
-
+              this.calculate2()
               this.opt1 = val
-
-              this.display = this.opr1
             } else if (val === '*' || val === '/') {
-              this._opt2 = val
+              this.opt2 = val
             }
 
-          } else {
-            this._opt1 = val
+          } else if (this.opr1) {
+            this.opt1 = val
           }
           break
         case '=':
           if (typeof this.opr1 === 'string' && typeof this.opr2 === 'string' && this.opt1) {
-            this.opr1 = this.calculate2(this.opr1, this.opr2, this.opr3, this.opt1, this.opt2)
-            this.opr2 = null
-            this.opr3 = null
-
-            this.opt1 = null
+            this.calculate2()
             this.opt2 = null
-
-            this.display = this.opr1
           }
           break
 
       }
-      console.log(this.opr1, this.opr2, this.opr3)
+      console.log(this.opr1, this.opr2, this.opr3, this.ans)
       console.log(this.opt1, this.opt2)
 
     } catch (e: any) {
