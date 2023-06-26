@@ -1,7 +1,7 @@
 <template>
   <div class="calculator">
     <div class="display column-4">
-      {{ display }}
+      {{ calculator.getDisplay() }}
     </div>
     <q-btn @click="calculator.input('AC')" class="btn">AC</q-btn>
     <q-btn @click="calculator.input('+/-')" class="btn">+/-</q-btn>
@@ -29,9 +29,6 @@
 
 import {
   defineComponent,
-  ref,
-  Ref,
-  watch,
   reactive
 } from 'vue';
 
@@ -40,13 +37,9 @@ export default defineComponent({
   name: 'ExampleComponent',
   setup() {
     const calculator = reactive(new Calculator())
-    const display: Ref<number | string> = ref(0)
-    watch(() => calculator.getDisplay(), () => {
-      display.value = calculator.getDisplay()
-    })
+
     return {
-      calculator,
-      display
+      calculator
     }
   }
 })
