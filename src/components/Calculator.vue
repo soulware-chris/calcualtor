@@ -27,7 +27,6 @@
 
 <script lang="ts">
 
-import { off } from 'process';
 import {
   defineComponent,
   reactive
@@ -72,7 +71,6 @@ class Calculator {
   }
 
   set display(val) {
-    console.log('set Display', val)
     if (val === '숫자 아님') {
       this._display = '숫자 아님'
     }
@@ -155,7 +153,6 @@ class Calculator {
       case '*':
         return opr1 * opr2
       case '/':
-        console.log('나누기', opr2)
         if (opr2 === 0) {
           throw new Error('0으로 못 나눔')
         }
@@ -166,27 +163,48 @@ class Calculator {
   }
 
   private calculate2() {
-    const [opt1, opt2, opr1, opr2, opr3] = [this.opt1, this.opt2, this.opr1, this.opr2, this.opr3]
     let result = null
-    if (opt1 && opt2 && opr3) {
-      if (opr1 === null || opr2 === null || opr3 === null) return
-      if (opt2 === '*' || opt2 === '/') {
-        this.opr2 = String(this.calculate(opr2, opr3, opt2))
+    if (this.opt1 && this.opt2) {
+      if (this.opr1 === null || this.opr2 === null || this.opr3 === null) return false
+      if (this.opt2 === '*' || this.opt2 === '/') {
+        this.opr2 = String(this.calculate(this.opr2, this.opr3, this.opt2))
+        result = this.calculate(this.opr1, this.opr2, this.opt1)
+        this.opr1 = String(result)
+        this.opr2 = null
         this.opr3 = null
-        result = this.calculate(opr1, this.opr2, opt1)
-      } else {
-        this.opr1 = String(this.calculate(opr1, opr2, opt1))
+      } else if (this.opt2 === '+' || this.opt2 === '-') {
+        console.log("opt2 === '+' || opt2 === '-'")
+        this.opr1 = String(this.calculate(this.opr1, this.opr2, this.opt1))
         this.opr2 = this.opr3
         this.opr3 = null
-        result = this.calculate(opr1, opr2, opt2)
+        result = this.calculate(this.opr1, this.opr2, this.opt2)
+        this.opr1 = String(result)
       }
     }
-    else {
-      if (opr1 === null || opr2 === null || opt1 === null) return
-      result = this.calculate(opr1, opr2, opt1)
+    else if (this.opt1) {
+      if (this.opr1 === null) return false
+      if (this.opr2 === null) {
+        console.log('opr2 null', this.opr1)
+
+        this.opr1 = String(result)
+        if (this.ans) {
+          console.log('ans exist')
+          result = this.calculate(this.ans, this.opr1, this.opt1)
+        }
+        else {
+          result = this.calculate(this.opr1, this.opr1, this.opt1)
+        }
+      }
+      else {
+        result = this.calculate(this.opr1, this.opr2, this.opt1)
+      }
+    } else {
+      return false
     }
     console.log('result', result)
-    this.ans = this.display = this.opr1 = String(result)
+
+    this.ans = this.display = String(result)
+    return true
   }
 
   public input(val: string) {
@@ -221,26 +239,30 @@ class Calculator {
         case '-':
         case '*':
         case '/':
-          if (this.opr1 && this.opr2 && this.opr3 && this.opt1 && this.opt2) {
-            this.calculate2()
-            this.opt1 = val
-            this.opt2 = null
-          } else if (this.opr1 && this.opr2 && this.opt1) {
-            if (val === '+' || val === '-') {
-              this.calculate2()
+          if (this.opt1 && this.opt2) {
+            if (this.calculate2()) {
               this.opt1 = val
-            } else if (val === '*' || val === '/') {
-              this.opt2 = val
+              this.opt2 = null
             }
-
+          } else if (this.opt1) {
+            if (val === '+' || val === '-') {
+              if (this.calculate2()) {
+                this.opt2 = val
+              }
+            } else if (val === '*' || val === '/') {
+              if (this.opr1 !== null && this.opr2 !== null) {
+                this.opt2 = val
+              }
+            }
           } else if (this.opr1) {
             this.opt1 = val
           }
           break
         case '=':
-          if (typeof this.opr1 === 'string' && typeof this.opr2 === 'string' && this.opt1) {
-            this.calculate2()
-            this.opt2 = null
+          if (this.opt1) {
+            if (this.calculate2()) {
+              this.opt2 = null
+            }
           }
           break
 
