@@ -1,25 +1,25 @@
 <template>
   <div class="calculator">
     <div class="display column-4">
-      {{ calculator.display }}
+      {{ calculator.numTop() }}
     </div>
     <q-btn @click="calculator.input('AC')" class="btn">AC</q-btn>
     <q-btn @click="calculator.input('+/-')" class="btn">+/-</q-btn>
     <q-btn @click="calculator.input('%')" class="btn">%</q-btn>
     <q-btn @click="calculator.input('/')" class="btn">/</q-btn>
-    <q-btn @click="calculator.input('7')" class="btn">7</q-btn>
-    <q-btn @click="calculator.input('8')" class="btn">8</q-btn>
-    <q-btn @click="calculator.input('9')" class="btn">9</q-btn>
+    <q-btn @click="calculator.input(7)" class="btn">7</q-btn>
+    <q-btn @click="calculator.input(8)" class="btn">8</q-btn>
+    <q-btn @click="calculator.input(9)" class="btn">9</q-btn>
     <q-btn @click="calculator.input('*')" class="btn">*</q-btn>
-    <q-btn @click="calculator.input('4')" class="btn">4</q-btn>
-    <q-btn @click="calculator.input('5')" class="btn">5</q-btn>
-    <q-btn @click="calculator.input('6')" class="btn">6</q-btn>
+    <q-btn @click="calculator.input(4)" class="btn">4</q-btn>
+    <q-btn @click="calculator.input(5)" class="btn">5</q-btn>
+    <q-btn @click="calculator.input(6)" class="btn">6</q-btn>
     <q-btn @click="calculator.input('-')" class="btn">-</q-btn>
-    <q-btn @click="calculator.input('1')" class="btn">1</q-btn>
-    <q-btn @click="calculator.input('2')" class="btn">2</q-btn>
-    <q-btn @click="calculator.input('3')" class="btn">3</q-btn>
+    <q-btn @click="calculator.input(1)" class="btn">1</q-btn>
+    <q-btn @click="calculator.input(2)" class="btn">2</q-btn>
+    <q-btn @click="calculator.input(3)" class="btn">3</q-btn>
     <q-btn @click="calculator.input('+')" class="btn">+</q-btn>
-    <q-btn @click="calculator.input('0')" class="column-2 btn">0</q-btn>
+    <q-btn @click="calculator.input(0)" class="column-2 btn">0</q-btn>
     <q-btn @click="calculator.input('.')" class="btn">.</q-btn>
     <q-btn @click="calculator.input('=')" class="btn">=</q-btn>
   </div>
@@ -43,242 +43,128 @@ export default defineComponent({
     }
   }
 })
+type Undefinable<T> = T | undefined;
 type Nullable<T> = T | null;
 type Operator = '+' | '-' | '*' | '/'
+type Tool = 'AC' | '+/-' | '%' | '.' | '='
 
 
-class Calculator {
-  private _opt1: Nullable<Operator>;
-  private _opt2: Nullable<Operator>;
-  private _opr1: Nullable<string>;
-  private _opr2: Nullable<string>;
-  private _opr3: Nullable<string>;
-  private _ans: Nullable<string>;
-  private _display: Nullable<string | number>;
+class Stack<T> {
+  private data: T[] = [];
 
   public constructor() {
-    this._opt1 = null
-    this._opt2 = null
-    this._opr1 = null
-    this._opr2 = null
-    this._opr3 = null
-    this._ans = null
-    this._display = 0
+    this.data = []
   }
 
-  get display() {
-    return this._display
+  public push(item: T) {
+    this.data.push(item)
   }
 
-  set display(val) {
-    if (val === '숫자 아님') {
-      this._display = '숫자 아님'
+  public pop(): Undefinable<T> {
+    return this.data.pop()
+  }
+
+  public top(): Undefinable<T> {
+    if (this.data.length) {
+      return this.data[this.data.length - 1]
     }
-    else {
-      this._display = Number(val)
+    return undefined
+  }
+
+  public isEmpty(): boolean {
+    if (this.data.length) {
+      return true
     }
-  }
-
-  get opr1(): Nullable<string> {
-    return this._opr1
-  }
-
-  set opr1(val: Nullable<string>) {
-    if (!isNaN(Number(val))) {
-      this._opr1 = val
-    }
-  }
-
-  get opr2(): Nullable<string> {
-    return this._opr2
-  }
-
-  set opr2(val: Nullable<string>) {
-    if (!isNaN(Number(val))) {
-      this._opr2 = val
-    }
-  }
-
-  get opr3(): Nullable<string> {
-    return this._opr3
-  }
-
-  set opr3(val: Nullable<string>) {
-    if (!isNaN(Number(val))) {
-      this._opr3 = val
-    }
-  }
-
-  get opt1(): Nullable<Operator> {
-    return this._opt1
-  }
-
-  set opt1(val: Nullable<Operator>) {
-    this._opt1 = val
-  }
-
-  get opt2(): Nullable<Operator> {
-    return this._opt2
-  }
-
-  set opt2(val: Nullable<Operator>) {
-    this._opt2 = val
-  }
-
-  get ans(): Nullable<string> {
-    return this._ans
-  }
-
-  set ans(val) {
-    this._ans = val
+    return false
   }
 
   public clear() {
-    this._opt1 = null
-    this._opt2 = null
-    this._opr1 = null
-    this._opr2 = null
-    this._opr3 = null
-    this.display = 0
+    this.data = []
+  }
+}
+
+class Calculator {
+  private numStack: Stack<number>
+  private opStack: Stack<Operator>
+  private opPriority: { [op in Operator]: number }
+
+  constructor() {
+    this.numStack = new Stack<number>
+    this.opStack = new Stack<Operator>
+    this.opPriority = { '*': 1, '/': 1, '+': 2, '-': 2 }
   }
 
-  private calculate(opr1_: string, opr2_: string, opt: Operator): number {
-    console.log('calculate', opr1_, opr2_, opt)
-    const [opr1, opr2] = [Number(opr1_), Number(opr2_)]
-    switch (opt) {
+  public numPush(val: number) {
+    this.numStack.push(val)
+  }
+
+  public numTop() {
+    return this.numStack.top()
+  }
+
+  public numPop() {
+    return this.numStack.pop()
+  }
+
+  public isNumEmpty() {
+    return this.numStack.isEmpty()
+  }
+
+  public opPush(val: Operator) {
+    this.opStack.push(val)
+  }
+
+  public opTop() {
+    return this.opStack.top()
+  }
+
+  public opPop() {
+    return this.opStack.pop()
+  }
+
+  public isOpEmpty() {
+    return this.opStack.isEmpty()
+  }
+
+  public clear() {
+    this.numStack.clear()
+    this.opStack.clear()
+  }
+
+  public input(val: number | Operator | Tool) {
+    switch (val) {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+        if (this.isNumEmpty()) {
+          this.numPush(val)
+        }
+        else {
+          const stringVal = `${this.numPop()}${val}`
+          const numVal = Number(stringVal)
+          this.numPush(numVal)
+        }
+        break
       case '+':
-        return opr1 + opr2
       case '-':
-        return opr1 - opr2
       case '*':
-        return opr1 * opr2
       case '/':
-        if (opr2 === 0) {
-          throw new Error('0으로 못 나눔')
+        if (this.isOpEmpty()) {
+
         }
         else {
-          return opr1 / opr2
+
         }
+        break
     }
-  }
-
-  private calculate2() {
-    let result = null
-    if (this.opt1 && this.opt2) {
-      if (this.opr1 === null || this.opr2 === null || this.opr3 === null) return false
-      if (this.opt2 === '*' || this.opt2 === '/') {
-        this.opr2 = String(this.calculate(this.opr2, this.opr3, this.opt2))
-        result = this.calculate(this.opr1, this.opr2, this.opt1)
-        this.opr1 = String(result)
-        this.opr2 = null
-        this.opr3 = null
-      } else if (this.opt2 === '+' || this.opt2 === '-') {
-        console.log("opt2 === '+' || opt2 === '-'")
-        this.opr1 = String(this.calculate(this.opr1, this.opr2, this.opt1))
-        this.opr2 = this.opr3
-        this.opr3 = null
-        result = this.calculate(this.opr1, this.opr2, this.opt2)
-        this.opr1 = String(result)
-      }
-    }
-    else if (this.opt1) {
-      if (this.opr1 === null) return false
-      if (this.opr2 === null) {
-        console.log('opr2 null', this.opr1)
-
-        this.opr1 = String(result)
-        if (this.ans) {
-          console.log('ans exist')
-          result = this.calculate(this.ans, this.opr1, this.opt1)
-        }
-        else {
-          result = this.calculate(this.opr1, this.opr1, this.opt1)
-        }
-      }
-      else {
-        result = this.calculate(this.opr1, this.opr2, this.opt1)
-      }
-    } else {
-      return false
-    }
-    console.log('result', result)
-
-    this.ans = this.display = String(result)
-    return true
-  }
-
-  public input(val: string) {
-    try {
-      switch (val) {
-        case 'AC':
-          this.clear()
-          break
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '.':
-          if (this._opt2) {
-            this.opr3 = (this.opr3 || '0') + val
-            this.display = this.opr3
-          } else if (this._opt1) {
-            this.opr2 = (this.opr2 || '0') + val
-            this.display = this.opr2
-          } else {
-            this.opr1 = (this.opr1 || '0') + val
-            this.display = this.opr1
-          }
-          break
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-          if (this.opt1 && this.opt2) {
-            if (this.calculate2()) {
-              this.opt1 = val
-              this.opt2 = null
-            }
-          } else if (this.opt1) {
-            if (val === '+' || val === '-') {
-              if (this.calculate2()) {
-                this.opt2 = val
-              }
-            } else if (val === '*' || val === '/') {
-              if (this.opr1 !== null && this.opr2 !== null) {
-                this.opt2 = val
-              }
-            }
-          } else if (this.opr1) {
-            this.opt1 = val
-          }
-          break
-        case '=':
-          if (this.opt1) {
-            if (this.calculate2()) {
-              this.opt2 = null
-            }
-          }
-          break
-
-      }
-      console.log(this.opr1, this.opr2, this.opr3, this.ans)
-      console.log(this.opt1, this.opt2)
-
-    } catch (e: any) {
-      console.error(e.message)
-      if (e.message === '0으로 못 나눔') {
-        this.display = '숫자 아님'
-      }
-      else {
-        alert('알 수 없는 에러')
-      }
-    }
+    console.log(this.numStack)
   }
 }
 
