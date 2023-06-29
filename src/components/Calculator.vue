@@ -1,7 +1,7 @@
 <template>
   <div class="calculator">
     <div class="display column-4">
-      {{ calculator.numTop() }}
+      {{ calculator.display() }}
     </div>
     <q-btn @click="calculator.input('AC')" class="btn">AC</q-btn>
     <q-btn @click="calculator.input('+/-')" class="btn">+/-</q-btn>
@@ -31,7 +31,7 @@ import {
   defineComponent,
   reactive
 } from 'vue';
-
+import { Calculator } from 'src/model/Calculator'
 
 export default defineComponent({
   name: 'ExampleComponent',
@@ -43,130 +43,8 @@ export default defineComponent({
     }
   }
 })
-type Undefinable<T> = T | undefined;
-type Nullable<T> = T | null;
-type Operator = '+' | '-' | '*' | '/'
-type Tool = 'AC' | '+/-' | '%' | '.' | '='
 
 
-class Stack<T> {
-  private data: T[] = [];
-
-  public constructor() {
-    this.data = []
-  }
-
-  public push(item: T) {
-    this.data.push(item)
-  }
-
-  public pop(): Undefinable<T> {
-    return this.data.pop()
-  }
-
-  public top(): Undefinable<T> {
-    if (this.data.length) {
-      return this.data[this.data.length - 1]
-    }
-    return undefined
-  }
-
-  public isEmpty(): boolean {
-    if (this.data.length) {
-      return true
-    }
-    return false
-  }
-
-  public clear() {
-    this.data = []
-  }
-}
-
-class Calculator {
-  private numStack: Stack<number>
-  private opStack: Stack<Operator>
-  private opPriority: { [op in Operator]: number }
-
-  constructor() {
-    this.numStack = new Stack<number>
-    this.opStack = new Stack<Operator>
-    this.opPriority = { '*': 1, '/': 1, '+': 2, '-': 2 }
-  }
-
-  public numPush(val: number) {
-    this.numStack.push(val)
-  }
-
-  public numTop() {
-    return this.numStack.top()
-  }
-
-  public numPop() {
-    return this.numStack.pop()
-  }
-
-  public isNumEmpty() {
-    return this.numStack.isEmpty()
-  }
-
-  public opPush(val: Operator) {
-    this.opStack.push(val)
-  }
-
-  public opTop() {
-    return this.opStack.top()
-  }
-
-  public opPop() {
-    return this.opStack.pop()
-  }
-
-  public isOpEmpty() {
-    return this.opStack.isEmpty()
-  }
-
-  public clear() {
-    this.numStack.clear()
-    this.opStack.clear()
-  }
-
-  public input(val: number | Operator | Tool) {
-    switch (val) {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-      case 8:
-      case 9:
-        if (this.isNumEmpty()) {
-          this.numPush(val)
-        }
-        else {
-          const stringVal = `${this.numPop()}${val}`
-          const numVal = Number(stringVal)
-          this.numPush(numVal)
-        }
-        break
-      case '+':
-      case '-':
-      case '*':
-      case '/':
-        if (this.isOpEmpty()) {
-
-        }
-        else {
-
-        }
-        break
-    }
-    console.log(this.numStack)
-  }
-}
 
 </script>
 
