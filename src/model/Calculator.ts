@@ -27,7 +27,7 @@ export class Calculator {
         return this.errorMessage;
       } else if (this.curNumInput !== null) {
         return Number(this.curNumInput);
-      } else if (this.numTop() !== undefined) {
+      } else if (this.numTop() !== null) {
         return this.numTop();
       } else {
         return 0;
@@ -37,91 +37,91 @@ export class Calculator {
     return result;
   }
 
-  private numPush(val: number) {
+  private numPush(val: number): void {
     this.numStack.push(val);
   }
 
-  private numTop() {
+  private numTop(): Nullable<number> {
     return this.numStack.top();
   }
 
-  private numPop() {
+  private numPop(): Nullable<number> {
     return this.numStack.pop();
   }
 
-  private numLength() {
+  private numLength(): number {
     return this.numStack.length();
   }
 
-  private opPush(val: Operator) {
+  private opPush(val: Operator): void {
     this.lastOperator = val;
     this.opStack.push(val);
   }
 
-  private opTop() {
+  private opTop(): Nullable<Operator> {
     return this.opStack.top();
   }
 
-  private opPop() {
+  private opPop(): Nullable<Operator> {
     return this.opStack.pop();
   }
 
-  private opLength() {
+  private opLength(): number {
     return this.opStack.length();
   }
 
-  private clear() {
+  private clear(): void {
     this.numStack.clear();
     this.opStack.clear();
     this.curNumInput = null;
     this.errorMessage = null;
   }
 
-  private consume() {
+  private consume(): void {
     const op1 = (() => {
-      if (this.numTop() !== undefined) {
+      if (this.numTop() !== null) {
         return this.numPop();
       } else {
         if (this.curNumInput !== null) {
           return Number(this.curNumInput);
         } else {
-          return undefined;
+          return null;
         }
       }
     })();
 
     const op2 = (() => {
       if (this.curNumInput === null) {
-        if (this.numTop() !== undefined) {
+        if (this.numTop() !== null) {
           return this.numPop();
         } else {
           if (this.lastNumber !== null) {
             return this.lastNumber;
           } else {
-            return undefined;
+            return null;
           }
         }
       } else {
         if (this.curNumInput !== null) {
           return Number(this.curNumInput);
         } else {
-          return undefined;
+          return null;
         }
       }
     })();
     const op = (() => {
-      if (this.opTop() !== undefined) {
+      if (this.opTop() !== null) {
         return this.opPop();
       } else {
         if (this.lastOperator !== null) {
           return this.lastOperator;
         } else {
-          return undefined;
+          return null;
         }
       }
     })();
 
-    if (op1 === undefined || op2 === undefined || op === undefined) {
+    if (op1 === null || op2 === null || op === null) {
       throw new Error('op1 op2 op type error');
     }
 
@@ -167,7 +167,6 @@ export class Calculator {
               }
             }
           }
-
           break;
         case 0:
         case 1:
@@ -204,7 +203,7 @@ export class Calculator {
           while (true) {
             const opTop = this.opTop();
             if (
-              opTop === undefined ||
+              opTop === null ||
               this.opPriority[opTop] < this.opPriority[val]
             ) {
               if (this.curNumInput !== null) {

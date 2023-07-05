@@ -13,15 +13,19 @@ export class Stack<T> {
     this.data.push(item);
   }
 
-  public pop(): Undefinable<T> {
-    return this.data.pop();
+  public pop(): Nullable<T> {
+    const item = this.data.pop();
+    if (item !== undefined) {
+      return item;
+    }
+    return null;
   }
 
-  public top(): Undefinable<T> {
+  public top(): Nullable<T> {
     if (this.data.length) {
       return this.data[this.data.length - 1];
     }
-    return undefined;
+    return null;
   }
 
   public isEmpty(): boolean {
