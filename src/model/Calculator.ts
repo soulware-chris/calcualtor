@@ -152,6 +152,28 @@ export class Calculator {
         case 'AC':
           this.clear();
           break;
+        case '+/-':
+          if (this.curNumInput !== null) {
+            const tmp = Number(this.curNumInput);
+            this.curNumInput = String(tmp * -1);
+          } else if (this.numTop() !== null) {
+            const tmp = this.numPop();
+            if (tmp !== null) {
+              this.numPush(tmp * -1);
+            }
+          }
+          break;
+        case '%':
+          if (this.curNumInput !== null) {
+            const tmp = this.calculate(Number(this.curNumInput), 100, '/');
+            this.curNumInput = String(tmp);
+          } else if (this.numTop() !== null) {
+            const tmp = this.numPop();
+            if (tmp !== null) {
+              this.numPush(this.calculate(tmp, 100, '/'));
+            }
+          }
+          break;
         case '=':
           if (this.curNumInput !== null) {
             this.lastNumber = Number(this.curNumInput);
